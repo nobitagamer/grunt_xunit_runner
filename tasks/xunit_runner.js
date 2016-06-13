@@ -107,30 +107,32 @@ module.exports = function (grunt) {
 
     function processFinalLine(data, output) {
         var lastChunk = data.pop();
-        var lastLineArray = lastChunk ?lastChunk.match(/^[0-9]*\stotal.*$/m)||'':'';
+        var lastLineArray = lastChunk ?lastChunk.match(/^.*Total: [0-9]+,.*$/m)||'':'';
 
         var line = lastLineArray[0];
         if(line && line.length>0){
             var parts = line.split(',');
+            grunt.log.writeln(parts[3].cyan);
             output.push({
-                total: parseInt(parts[0].split(' ')[0], 10 ),
-                failed: parseInt(parts[1].split(' ')[1], 10),
-                skipped: parseInt(parts[2].split(' ')[1], 10),
-                time: parseFloat(parts[3].split(' ')[2], 10)
+                total: parseInt(parts[0].split(': ')[1], 10 ),
+                error: parseInt(parts[1].split(': ')[1], 10),
+                failed: parseInt(parts[2].split(': ')[1], 10),
+                skipped: parseInt(parts[3].split(': ')[1], 10),
+                time: parseFloat(parts[4].trim('s').split(': ')[1], 10)
             });
         }
     }
 
     function buildCmdLine(src, config, options) {
         var arg = config  ?config+' ':'';
-        arg += options.silent==='true' ? '/silent  ': '';
-        arg += options.teamcity==='true' ? '/teamcity ' : '';
-        arg += options.trait.length>0 ? '/trait "' + options.trait+'"' : '';
-        arg += options.notrait.length>0 ? '/notrait "' + options.notrait +'"': '';
-        arg += options.noshadow.length>0 ? '/noshadow' + options.noShadow : '';
-        arg += options.xml.length>0 ? '/xml '+ options.xml : '';
-        arg += options.html.length>0 ? '/html '+ options.html : '';
-        arg += options.nunit.length>0 ? '/nunit '+ options.nunit : '';
+        arg += options.silent==='true' ? '-quiet  ': '';
+        arg += options.teamcity==='true' ? '-teamcity ' : '';
+        arg += options.trait.length>0 ? '-trait "' + options.trait+'"' : '';
+        arg += options.notrait.length>0 ? '-notrait "' + options.notrait +'"': '';
+        arg += options.noshadow.length>0 ? '-noshadow' + options.noShadow : '';
+        arg += options.xml.length>0 ? '-xml '+ options.xml : '';
+        arg += options.html.length>0 ? '-html '+ options.html : '';
+        arg += options.nunit.length>0 ? '-nunit '+ options.nunit : '';
 
         return util.format("%s %s ", options.xUnit, src, arg);
     }
